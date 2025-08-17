@@ -72,6 +72,12 @@
             </x-responsive-nav-link>
         </div>
 
+        @if(auth()->user()->role == 'admin')
+                    <x-nav-link :href="route('admin.matakuliah.index')" :active="request()->routeIs('admin.matakuliah.*')">
+                        {{ __('Mata Kuliah') }}
+                    </x-nav-link>
+                @endif
+
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
             <div class="px-4">
