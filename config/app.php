@@ -123,4 +123,15 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    // config/app.php
+
+    'providers' => ServiceProvider::class()->merge([
+        // ... provider lain
+        // Barryvdh\DomPDF\ServiceProvider::class, // <-- HAPUS BARIS INI
+    ])->toArray(),
+
+    'aliases' => Facade::class()->merge([
+        // ... alias lain
+        // 'Pdf' => Barryvdh\DomPDF\Facade\Pdf::class, // <-- HAPUS BARIS INI
+    ])->toArray(),
 ];

@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\MataKuliahController;
 use App\Http\Controllers\Admin\TranskripController;
+use App\Http\Controllers\Mahasiswa\BiodataController;
+use App\Http\Controllers\Mahasiswa\SklController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -27,6 +29,7 @@ Route::middleware('auth')->group(function () {
         Route::get('transkrip', [TranskripController::class, 'index'])->name('transkrip.index');
         Route::post('transkrip', [TranskripController::class, 'store'])->name('transkrip.store');
         Route::get('transkrip/find-mahasiswa', [TranskripController::class, 'findMahasiswa'])->name('transkrip.find');
+        Route::delete('transkrip/{transkrip}', [TranskripController::class, 'destroy'])->name('transkrip.destroy');
     });
 });
 

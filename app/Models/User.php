@@ -45,4 +45,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function biodata()
+    {
+        return $this->hasOne(Biodata::class);
+    }
+
+    public function transkrips()
+    {
+        return $this->hasMany(Transkrip::class);
+    }
 }

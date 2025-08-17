@@ -16,6 +16,22 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+
+                @if(auth()->user()->role == 'admin')
+                    <x-nav-link :href="route('admin.matakuliah.index')" :active="request()->routeIs('admin.matakuliah.*')">
+                        {{ __('Mata Kuliah') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.transkrip.index')" :active="request()->routeIs('admin.transkrip.*')">
+                        {{ __('Input Transkrip') }}
+                    </x-nav-link>
+                    @else
+                        <x-nav-link :href="route('biodata.edit')" :active="request()->routeIs('biodata.edit')">
+                            {{ __('Biodata') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('skl.cetak')" :active="request()->routeIs('skl.cetak')" target="_blank">
+                            {{ __('Cetak SKL') }}
+                        </x-nav-link>
+                    @endif
             </div>
 
             <!-- Settings Dropdown -->
@@ -71,12 +87,6 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
-
-        @if(auth()->user()->role == 'admin')
-                    <x-nav-link :href="route('admin.matakuliah.index')" :active="request()->routeIs('admin.matakuliah.*')">
-                        {{ __('Mata Kuliah') }}
-                    </x-nav-link>
-                @endif
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
