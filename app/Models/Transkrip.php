@@ -10,8 +10,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 // app/Models/Transkrip.php
 class Transkrip extends Model
 {
-    protected $fillable = ['biodata_id', 'mata_kuliah_id', 'nilai']; // Ganti user_id -> biodata_id
+    use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'biodata_id',
+        'mata_kuliah_id',
+        'nilai',
+    ];
     public function biodata()
     {
         return $this->belongsTo(Biodata::class);

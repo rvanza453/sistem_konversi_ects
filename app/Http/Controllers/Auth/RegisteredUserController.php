@@ -38,13 +38,13 @@ class RegisteredUserController extends Controller
                 'required',
                 'string',
                 'max:15',
-                // --- INI BAGIAN PENTINGNYA ---
-                // Validasi custom: NPM dianggap sudah ada HANYA JIKA
-                // biodata dengan NPM tersebut sudah punya user_id (sudah diklaim).
+                // Aturan validasi custom
                 function ($attribute, $value, $fail) {
                     $biodata = Biodata::where('npm', $value)->first();
 
+                    // Gagal HANYA JIKA biodata ada DAN sudah punya user_id
                     if ($biodata && $biodata->user_id !== null) {
+                        // Ini adalah pesan error yang akan ditampilkan
                         $fail('NPM ini sudah terdaftar dan telah diklaim oleh user lain.');
                     }
                 },
@@ -56,20 +56,15 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-
-        // --- LOGIKA PENGHUBUNGAN BIODATA YANG DISEMPURNAKAN ---
-        // Cari biodata berdasarkan NPM. Jika tidak ada, buat baru.
-        // Jika ada, perbarui user_id-nya dengan id user yang baru dibuat.
+        
+        // Logika untuk menghubungkan atau membuat biodata
         Biodata::updateOrCreate(
             ['npm' => $request->npm],
             ['user_id' => $user->id]
         );
-        // --------------------------------------------------------
 
         event(new Registered($user));
-
         Auth::login($user);
-
         return redirect(route('dashboard', absolute: false));
     }
 }

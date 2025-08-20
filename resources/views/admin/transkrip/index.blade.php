@@ -45,7 +45,6 @@
                     <h3 class="text-lg font-semibold mb-4">Tambah Mata Kuliah ke Transkrip</h3>
                     <form action="{{ route('admin.transkrip.store') }}" method="POST">
                         @csrf
-                        {{-- Ganti user_id menjadi biodata_id --}}
                         <input type="hidden" name="biodata_id" value="{{ $biodata->id }}">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
@@ -56,10 +55,18 @@
                                         <option value="{{ $mk->id }}">{{ $mk->kode_mk }} - {{ $mk->nama_mk }}</option>
                                     @endforeach
                                 </select>
+                                {{-- Tambahkan blok error ini --}}
+                                @error('mata_kuliah_id')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
                                 <label for="nilai" class="block text-gray-700 text-sm font-bold mb-2">Nilai</label>
                                 <input type="text" name="nilai" id="nilai" placeholder="Contoh: A" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" required>
+                                {{-- Tambahkan blok error ini --}}
+                                @error('nilai')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                             <div>
                                 <label class="block text-transparent text-sm font-bold mb-2">Aksi</label>
