@@ -30,6 +30,9 @@ Route::middleware('auth')->group(function () {
         Route::post('transkrip', [TranskripController::class, 'store'])->name('transkrip.store');
         Route::get('transkrip/find-mahasiswa', [TranskripController::class, 'findMahasiswa'])->name('transkrip.find');
         Route::delete('transkrip/{transkrip}', [TranskripController::class, 'destroy'])->name('transkrip.destroy');
+        
+        // Rute untuk manajemen admin
+        Route::resource('admin', \App\Http\Controllers\Admin\AdminController::class);
     });
 });
 
