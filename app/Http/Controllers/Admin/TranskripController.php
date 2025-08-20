@@ -10,54 +10,62 @@ use Illuminate\Http\Request;
 
 class TranskripController extends Controller
 {
-    public function index(Request $request)
+    // Fungsi untuk menampilkan transkrip
+    public function index()
     {
-        $biodata = null;
-        $transkrips = collect(); // Gunakan collection kosong sebagai default
-        $totalEcts = 0;
+        $user = Auth::user();
 
-        if ($request->has('npm') && $request->npm != '') {
-            // Cari biodata berdasarkan NPM. Jika tidak ada, buat baru.
-            $biodata = Biodata::firstOrCreate(
-                ['npm' => $request->npm],
-                // Tidak perlu mengisi field lain saat create, akan diisi mahasiswa nanti
-            );
-
-            // Muat relasi transkrip dan mata kuliah
-            $biodata->load('transkrips.mataKuliah');
-            $transkrips = $biodata->transkrips;
-
-            $totalEcts = $transkrips->sum(function ($transkrip) {
-                return $transkrip->mataKuliah->total_ects ?? 0;
-            });
+        if ($user->role == 'admin') {
+            // Jika admin, tampilkan semua transkrip
+            $transcripts = Transcript::all();
+        } else {
+            // Jika mahasiswa, HANYA tampilkan transkrip miliknya
+            $transcripts = Transcript::where('user_id', $user->id)->get();
         }
 
-        $mataKuliahs = MataKuliah::orderBy('nama_mk')->get();
-
-        // Ganti 'mahasiswa' dengan 'biodata' saat mengirim ke view
-        return view('admin.transkrip.index', compact('biodata', 'mataKuliahs', 'transkrips', 'totalEcts'));
+        return view('transcripts.index', compact('transcripts'));
     }
 
+    // Fungsi untuk menyimpan transkrip baru (HANYA ADMIN)
     public function store(Request $request)
     {
-        $request->validate([
-            'biodata_id' => 'required|exists:biodatas,id', // Validasi ke tabel biodatas
-            'mata_kuliah_id' => 'required|exists:mata_kuliahs,id',
-            'nilai' => 'required|string|max:2',
+        // 1. Validasi Input
+        $validatedData = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'mata_kuliah' => 'required|string|max:255',
+            'nilai' => 'required|string|max:2', // misal: A, B+, C
+            'sks' => 'required|integer|min:1',
         ]);
-        
-        Transkrip::create($request->all());
 
-        $npm = Biodata::find($request->biodata_id)->npm;
+        // 2. Logika Konversi ECTS (contoh sederhana)
+        $ects = $this->konversiKeECTS($validatedData['nilai']);
+        $validatedData['ects'] = $ects;
 
-        return redirect()->route('admin.transkrip.index', ['npm' => $npm])->with('success', 'Mata kuliah berhasil ditambahkan.');
+
+        // 3. Simpan ke database
+        Transcript::create($validatedData);
+
+        return redirect()->route('transcripts.index')->with('success', 'Transkrip berhasil ditambahkan.');
     }
 
-    public function destroy(Transkrip $transkrip)
+    /**
+     * Fungsi untuk konversi nilai ke ECTS.
+     * Taruh logika ini di sini atau di dalam Service Class agar lebih rapi.
+     */
+    private function konversiKeECTS(string $nilai): string
     {
-        $npm = $transkrip->biodata->npm;
-        $transkrip->delete();
+        $tabelKonversi = [
+            'A'  => 'A',
+            'A-' => 'A',
+            'B+' => 'B',
+            'B'  => 'B',
+            'B-' => 'C',
+            'C+' => 'C',
+            'C'  => 'D',
+            'D'  => 'E',
+            'E'  => 'F',
+        ];
 
-        return redirect()->route('admin.transkrip.index', ['npm' => $npm])->with('success', 'Entri transkrip berhasil dihapus.');
+        return $tabelKonversi[$nilai] ?? 'F';
     }
 }
