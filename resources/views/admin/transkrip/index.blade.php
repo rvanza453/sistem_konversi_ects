@@ -1,4 +1,3 @@
-
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -33,18 +32,21 @@
                 </div>
             @endif
 
-            @if ($mahasiswa)
+            {{-- PERUBAHAN UTAMA: dari $mahasiswa menjadi $biodata --}}
+            @if ($biodata)
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
                     <h3 class="text-lg font-semibold mb-4">Data Mahasiswa</h3>
-                    <p><strong>Nama:</strong> {{ $mahasiswa->name }}</p>
-                    <p><strong>NPM:</strong> {{ $mahasiswa->biodata->npm }}</p>
+                    {{-- Ganti cara memanggil nama, karena bisa jadi user belum terhubung --}}
+                    <p><strong>Nama:</strong> {{ $biodata->user->name ?? 'Belum Registrasi Akun' }}</p>
+                    <p><strong>NPM:</strong> {{ $biodata->npm }}</p>
                     <hr class="my-6">
 
                     <h3 class="text-lg font-semibold mb-4">Tambah Mata Kuliah ke Transkrip</h3>
                     <form action="{{ route('admin.transkrip.store') }}" method="POST">
                         @csrf
-                        <input type="hidden" name="user_id" value="{{ $mahasiswa->id }}">
+                        {{-- Ganti user_id menjadi biodata_id --}}
+                        <input type="hidden" name="biodata_id" value="{{ $biodata->id }}">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="mata_kuliah_id" class="block text-gray-700 text-sm font-bold mb-2">Mata Kuliah</label>

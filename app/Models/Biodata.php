@@ -5,27 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+// app/Models/Biodata.php
 class Biodata extends Model
 {
-    use HasFactory;
+    protected $fillable = ['user_id', 'npm', 'no_hp', 'photo']; // Tambahkan user_id
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'user_id',
-        'npm',
-        'no_hp',
-        'photo',
-    ];
-
-    /**
-     * Mendapatkan user yang memiliki biodata ini.
-     */
     public function user()
     {
+        // user_id bisa null, jadi relasinya tetap belongsTo
         return $this->belongsTo(User::class);
+    }
+
+    public function transkrips()
+    {
+        return $this->hasMany(Transkrip::class);
     }
 }

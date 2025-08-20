@@ -3,78 +3,59 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Biodata;
 use App\Models\MataKuliah;
 use App\Models\Transkrip;
 use Illuminate\Http\Request;
 
 class TranskripController extends Controller
 {
-    /**
-     * Menampilkan halaman input transkrip.
-     * Jika ada NPM di request, cari dan tampilkan data mahasiswa.
-     */
     public function index(Request $request)
     {
-        $mahasiswa = null;
-        $transkrips = null;
+        $biodata = null;
+        $transkrips = collect(); // Gunakan collection kosong sebagai default
         $totalEcts = 0;
 
         if ($request->has('npm') && $request->npm != '') {
-            $mahasiswa = User::whereHas('biodata', function ($query) use ($request) {
-                $query->where('npm', $request->npm);
-            })->with('biodata', 'transkrips.mataKuliah')->first();
+            // Cari biodata berdasarkan NPM. Jika tidak ada, buat baru.
+            $biodata = Biodata::firstOrCreate(
+                ['npm' => $request->npm],
+                // Tidak perlu mengisi field lain saat create, akan diisi mahasiswa nanti
+            );
 
-            if ($mahasiswa) {
-                $transkrips = $mahasiswa->transkrips;
-                $totalEcts = $transkrips->sum(function ($transkrip) {
-                    return $transkrip->mataKuliah->total_ects ?? 0;
-                });
-            } else {
-                // Beri pesan jika mahasiswa tidak ditemukan
-                return redirect()->route('admin.transkrip.index')->with('error', 'Mahasiswa dengan NPM tersebut tidak ditemukan.');
-            }
+            // Muat relasi transkrip dan mata kuliah
+            $biodata->load('transkrips.mataKuliah');
+            $transkrips = $biodata->transkrips;
+
+            $totalEcts = $transkrips->sum(function ($transkrip) {
+                return $transkrip->mataKuliah->total_ects ?? 0;
+            });
         }
 
         $mataKuliahs = MataKuliah::orderBy('nama_mk')->get();
 
-        return view('admin.transkrip.index', compact('mahasiswa', 'mataKuliahs', 'transkrips', 'totalEcts'));
+        // Ganti 'mahasiswa' dengan 'biodata' saat mengirim ke view
+        return view('admin.transkrip.index', compact('biodata', 'mataKuliahs', 'transkrips', 'totalEcts'));
     }
 
-    /**
-     * Menyimpan entri transkrip baru.
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'biodata_id' => 'required|exists:biodatas,id', // Validasi ke tabel biodatas
             'mata_kuliah_id' => 'required|exists:mata_kuliahs,id',
             'nilai' => 'required|string|max:2',
         ]);
         
-        // Cek agar mata kuliah yang sama tidak diinput dua kali untuk user yang sama
-        $existing = Transkrip::where('user_id', $request->user_id)
-                             ->where('mata_kuliah_id', $request->mata_kuliah_id)
-                             ->exists();
-
-        if ($existing) {
-             return back()->with('error', 'Mata kuliah ini sudah ada di transkrip mahasiswa.');
-        }
-
         Transkrip::create($request->all());
 
-        // Ambil NPM mahasiswa untuk redirect kembali ke halaman yang sama
-        $npm = User::find($request->user_id)->biodata->npm;
+        $npm = Biodata::find($request->biodata_id)->npm;
 
-        return redirect()->route('admin.transkrip.index', ['npm' => $npm])->with('success', 'Mata kuliah berhasil ditambahkan ke transkrip.');
+        return redirect()->route('admin.transkrip.index', ['npm' => $npm])->with('success', 'Mata kuliah berhasil ditambahkan.');
     }
-    
-    /**
-     * Menghapus entri transkrip.
-     */
+
     public function destroy(Transkrip $transkrip)
     {
-        $npm = $transkrip->user->biodata->npm;
+        $npm = $transkrip->biodata->npm;
         $transkrip->delete();
 
         return redirect()->route('admin.transkrip.index', ['npm' => $npm])->with('success', 'Entri transkrip berhasil dihapus.');

@@ -53,6 +53,7 @@ class User extends Authenticatable
 
     public function transkrips()
     {
-        return $this->hasMany(Transkrip::class);
+        // User punya banyak Transkrip "melalui" Biodata
+        return $this->hasManyThrough(Transkrip::class, Biodata::class);
     }
 }

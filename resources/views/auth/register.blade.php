@@ -1,7 +1,12 @@
 <x-guest-layout>
     <form method="POST" action="{{ route('register') }}">
         @csrf
-
+        <!-- NPM -->
+        <div class="mt-4">
+            <x-input-label for="npm" :value="__('NPM')" />
+            <x-text-input id="npm" class="block mt-1 w-full" type="text" name="npm" :value="old('npm')" required />
+            <x-input-error :messages="$errors->get('npm')" class="mt-2" />
+        </div>
         <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />
